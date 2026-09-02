@@ -1,0 +1,30 @@
+{
+  "name": "recoveriq",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NISHANTH-PM/RecoverIQ.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NISHANTH-PM/RecoverIQ/issues"
+  },
+  "homepage": "https://github.com/NISHANTH-PM/RecoverIQ#readme",
+  "devDependencies": {
+    "@types/node": "^26.4.1",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "typecheck": "^0.1.2"
+  }
+}
