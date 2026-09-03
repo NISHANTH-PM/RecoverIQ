@@ -4,6 +4,8 @@ import type {
   MethodStats,
 } from "./types.js";
 
+import type { Random } from "./random.js";
+
 const PAYMENT_METHODS: PaymentMethod[] = [
   "upi",
   "card",
@@ -11,12 +13,23 @@ const PAYMENT_METHODS: PaymentMethod[] = [
   "wallet",
 ];
 
-function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+function randomInt(
+  min: number,
+  max: number,
+  random: Random
+): number {
+  return Math.floor(
+    random() * (max - min + 1)
+  ) + min;
 }
 
-function randomItem<T>(items: T[]): T {
-  return items[Math.floor(Math.random() * items.length)];
+function randomItem<T>(
+  items: T[],
+  random: Random
+): T {
+  return items[
+    Math.floor(random() * items.length)
+  ];
 }
 
 function generateMethodStats(
@@ -31,21 +44,26 @@ function generateMethodStats(
   };
 }
 
-function generateCustomer(id: number): Customer {
-  const totalTransactions = randomInt(5, 50);
+function generateCustomer(
+  id: number,
+  random: Random
+): Customer {
+  const totalTransactions = randomInt(5, 50, random);
 
-  const totalSuccessfulTransactions = Math.round(
-    totalTransactions * (0.65 + Math.random() * 0.3)
-  );
+const totalSuccessfulTransactions = Math.round(
+  totalTransactions * (0.65 + random() * 0.3)
+);
 
-  const availablePaymentMethods = PAYMENT_METHODS.filter(
-    () => Math.random() > 0.2
-  );
+const availablePaymentMethods = PAYMENT_METHODS.filter(
+  () => random() > 0.2
+);
 
   // Make sure every customer has at least two methods available.
   while (availablePaymentMethods.length < 2) {
-    const method = randomItem(PAYMENT_METHODS);
-
+    const method = randomItem(
+      PAYMENT_METHODS,
+      random
+);
     if (!availablePaymentMethods.includes(method)) {
       availablePaymentMethods.push(method);
     }
@@ -54,10 +72,15 @@ function generateCustomer(id: number): Customer {
   const methodStats: Partial<Record<PaymentMethod, MethodStats>> = {};
 
   for (const method of availablePaymentMethods) {
-    const attempts = randomInt(2, 20);
+    const attempts = randomInt(
+      2,
+      20,
+      random
+);
 
     // Different customers naturally have different success rates.
-    const successRate = 0.5 + Math.random() * 0.5;
+    const successRate =
+      0.5 + random() * 0.5;
 
     methodStats[method] = generateMethodStats(
       attempts,
@@ -78,11 +101,16 @@ function generateCustomer(id: number): Customer {
   };
 }
 
-export function generateCustomers(count: number): Customer[] {
+export function generateCustomers(
+  count: number,
+  random: Random
+): Customer[] {
   const customers: Customer[] = [];
 
   for (let i = 1; i <= count; i++) {
-    customers.push(generateCustomer(i));
+    customers.push(
+  generateCustomer(i, random)
+);
   }
 
   return customers;

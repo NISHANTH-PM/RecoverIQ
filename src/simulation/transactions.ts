@@ -7,16 +7,30 @@ import type {
   PaymentAttempt,
 } from "./types.js";
 
-function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+import type { Random } from "./random.js";
+
+function randomInt(
+  min: number,
+  max: number,
+  random: Random
+): number {
+  return Math.floor(
+    random() * (max - min + 1)
+  ) + min;
 }
 
-function randomItem<T>(items: T[]): T {
-  return items[Math.floor(Math.random() * items.length)];
+function randomItem<T>(
+  items: T[],
+  random: Random
+): T {
+  return items[
+    Math.floor(random() * items.length)
+  ];
 }
 
 function generateAmount(
-  merchant: Merchant
+  merchant: Merchant,
+  random: Random
 ): number {
   const variation = merchant.averageTransactionAmount * 0.5;
 
@@ -28,26 +42,30 @@ function generateAmount(
   const max =
     merchant.averageTransactionAmount + variation;
 
-  return Math.round(randomInt(min, max));
+  return Math.round(randomInt(min, max, random));
 }
 
 function generatePaymentMethod(
-  customer: Customer
+  customer: Customer,
+  random: Random
 ): PaymentMethod {
   return randomItem(
-    customer.availablePaymentMethods
+    customer.availablePaymentMethods, 
+    random
   );
 }
 
-function generateTimestamp(): string {
+function generateTimestamp(
+  random: Random
+): string {
   const date = new Date();
 
   date.setHours(
-    date.getHours() - randomInt(0, 72)
+    date.getHours() - randomInt(0, 72, random)
   );
 
   date.setMinutes(
-    randomInt(0, 59)
+    randomInt(0, 59, random)
   );
 
   date.setSeconds(0);
@@ -59,17 +77,18 @@ function generateTimestamp(): string {
 function generateTransaction(
   id: number,
   customer: Customer,
-  merchant: Merchant
+  merchant: Merchant,
+  random: Random
 ): Transaction {
   const transactionId =
     `TXN${String(id).padStart(6, "0")}`;
 
-  const amount = generateAmount(merchant);
+  const amount = generateAmount(merchant, random);
 
   const method =
-    generatePaymentMethod(customer);
+    generatePaymentMethod(customer, random);
 
-  const timestamp = generateTimestamp();
+  const timestamp = generateTimestamp(random);
 
   const attempt: PaymentAttempt = {
     id: `${transactionId}_ATTEMPT_1`,
@@ -101,19 +120,21 @@ function generateTransaction(
 export function generateTransactions(
   count: number,
   customers: Customer[],
-  merchants: Merchant[]
+  merchants: Merchant[],
+  random: Random
 ): Transaction[] {
   const transactions: Transaction[] = [];
 
   for (let i = 1; i <= count; i++) {
-    const customer = randomItem(customers);
-    const merchant = randomItem(merchants);
+    const customer = randomItem(customers, random);
+    const merchant = randomItem(merchants, random);
 
     transactions.push(
       generateTransaction(
         i,
         customer,
-        merchant
+        merchant,
+        random
       )
     );
   }

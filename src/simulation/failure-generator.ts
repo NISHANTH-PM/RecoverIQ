@@ -5,24 +5,27 @@ import type {
   PaymentMethod,
 } from "./types.js";
 
-function randomFloat(): number {
-  return Math.random();
+import type { Random } from "./random.js";
+
+function randomFloat(random:  Random): number {
+  return random();
 }
 
 function weightedChoice(
-  choices: { value: FailureType; weight: number }[]
+  choices: { value: FailureType; weight: number }[],
+  random: Random
 ): FailureType {
   const totalWeight = choices.reduce(
     (sum, choice) => sum + choice.weight,
     0
   );
 
-  let random = randomFloat() * totalWeight;
+  let randomValue = randomFloat(random) * totalWeight;
 
   for (const choice of choices) {
-    random -= choice.weight;
+    randomValue -= choice.weight;
 
-    if (random <= 0) {
+    if (randomValue <= 0) {
       return choice.value;
     }
   }
@@ -31,7 +34,8 @@ function weightedChoice(
 }
 
 function generateUPIFailure(
-  environment: EnvironmentState
+  environment: EnvironmentState,
+  random: Random
 ): FailureType {
   const choices: {
     value: FailureType;
@@ -64,11 +68,15 @@ function generateUPIFailure(
     },
   ];
 
-  return weightedChoice(choices);
+  return weightedChoice(
+    choices,
+    random
+  );
 }
 
 function generateCardFailure(
-  environment: EnvironmentState
+  environment: EnvironmentState,
+  random: Random
 ): FailureType {
   const choices: {
     value: FailureType;
@@ -99,10 +107,12 @@ function generateCardFailure(
     },
   ];
 
-  return weightedChoice(choices);
+  return weightedChoice(choices, random);
 }
 
-function generateNetBankingFailure(): FailureType {
+function generateNetBankingFailure(
+  random: Random
+): FailureType {
   return weightedChoice([
     {
       value: "bank_timeout",
@@ -120,10 +130,12 @@ function generateNetBankingFailure(): FailureType {
       value: "insufficient_funds",
       weight: 10,
     },
-  ]);
+  ], random);
 }
 
-function generateWalletFailure(): FailureType {
+function generateWalletFailure(
+  random: Random
+): FailureType {
   return weightedChoice([
     {
       value: "network_error",
@@ -141,35 +153,38 @@ function generateWalletFailure(): FailureType {
       value: "insufficient_funds",
       weight: 15,
     },
-  ]);
+  ], random);
 }
 
 export function generateFailureType(
   method: PaymentMethod,
-  environment: EnvironmentState
+  environment: EnvironmentState,
+  random: Random
 ): FailureType {
   switch (method) {
     case "upi":
-      return generateUPIFailure(environment);
+      return generateUPIFailure(environment, random);
 
     case "card":
-      return generateCardFailure(environment);
+      return generateCardFailure(environment, random);
 
     case "net_banking":
-      return generateNetBankingFailure();
+      return generateNetBankingFailure(random);
 
     case "wallet":
-      return generateWalletFailure();
+      return generateWalletFailure(random);
   }
 }
 
 export function applyFailure(
   attempt: PaymentAttempt,
-  environment: EnvironmentState
+  environment: EnvironmentState,
+  random: Random
 ): PaymentAttempt {
   const failureType = generateFailureType(
     attempt.method,
-    environment
+    environment,
+    random
   );
 
   return {

@@ -28,6 +28,14 @@ import {
   generateHiddenOutcomeModel,
 } from "./outcome-model.js";
 
+import {
+  generateEnvironment,
+} from "./environment.js";
+
+import {
+  createSeededRandom,
+} from "./random.js";
+
 export interface SimulationWorld {
   customers: Customer[];
   merchants: Merchant[];
@@ -43,40 +51,25 @@ export interface RecoveryResult {
   reason: string;
 }
 
-function generateEnvironment(): EnvironmentState {
-  const healthStates = [
-    "healthy",
-    "healthy",
-    "healthy",
-    "degraded",
-    "outage",
-  ] as const;
-
-  return {
-    upiHealth:
-      healthStates[
-        Math.floor(Math.random() * healthStates.length)
-      ],
-
-    cardNetworkHealth:
-      Math.random() > 0.9
-        ? "degraded"
-        : "healthy",
-
-    netBankingHealth:
-      Math.random() > 0.9
-        ? "degraded"
-        : "healthy",
-
-    hourOfDay: Math.floor(
-      Math.random() * 24
-    ),
-  };
+function getRecommendationAction(
+  method: PaymentMethod,
+): RecoveryAction {
+  switch (method) {
+    case "upi":
+      return "recommend_upi";
+    case "card":
+      return "recommend_card";
+    case "net_banking":
+      return "recommend_net_banking";
+    case "wallet":
+      return "recommend_wallet";
+  }
 }
 
 function applyInitialFailures(
   transactions: Transaction[],
-  environment: EnvironmentState
+  environment: EnvironmentState,
+  random: () => number
 ): Transaction[] {
   return transactions.map(
     (transaction): Transaction => {
@@ -87,10 +80,11 @@ function applyInitialFailures(
         return transaction;
       }
 
-      const failedAttempt: PaymentAttempt =
+      const failedAttempt = 
         applyFailure(
           initialAttempt,
-          environment
+          environment,
+          random
         );
 
       return {
@@ -109,28 +103,34 @@ function applyInitialFailures(
 export function createSimulationWorld(
   customerCount: number,
   merchantCount: number,
-  transactionCount: number
+  transactionCount: number,
+  seed: number = 42
 ): SimulationWorld {
+  const random = createSeededRandom(seed);
   const customers =
-    generateCustomers(customerCount);
-
+    generateCustomers(
+    customerCount,
+    random
+  );
   const merchants =
-    generateMerchants(merchantCount);
+    generateMerchants(merchantCount,random);
 
   const environment =
-    generateEnvironment();
+    generateEnvironment(random);
 
   const pendingTransactions =
     generateTransactions(
       transactionCount,
       customers,
-      merchants
+      merchants,
+      random
     );
 
   const transactions =
     applyInitialFailures(
       pendingTransactions,
-      environment
+      environment,
+      random
     );
 
   return {
@@ -166,7 +166,8 @@ export function executeRecoveryAction(
   transaction: Transaction,
   customer: Customer,
   environment: EnvironmentState,
-  action: RecoveryAction
+  action: RecoveryAction,
+  random: () => number = Math.random
 ): RecoveryResult {
   const currentAttempt =
     transaction.attempts[
@@ -197,23 +198,13 @@ export function executeRecoveryAction(
     };
   }
 
-  let method: PaymentMethod =
-    currentAttempt.method;
-
-  const recommendedMethod =
-    getMethodFromAction(action);
-
-  if (recommendedMethod) {
-    method = recommendedMethod;
-  }
-
   const failureType =
     currentAttempt.failureType ?? "unknown";
 
   const outcomeModel =
     generateHiddenOutcomeModel(
       customer,
-      method,
+      currentAttempt.method,
       failureType,
       environment
     );
@@ -227,14 +218,17 @@ export function executeRecoveryAction(
     successProbability =
       outcomeModel.retryLaterSuccessProbability;
   } else {
-    successProbability =
-      outcomeModel.methodSuccessProbability[
-        method
-      ];
+    return {
+      action,
+      success: false,
+      recoveredAmount: 0,
+      reason:
+        "Payment-method recommendations require explicit customer acceptance before any payment attempt is executed.",
+    };
   }
 
   const success =
-    Math.random() < successProbability;
+    random() < successProbability;
 
   const newAttemptNumber =
     transaction.attempts.length + 1;
@@ -245,7 +239,7 @@ export function executeRecoveryAction(
 
     transactionId: transaction.id,
 
-    method,
+    method: currentAttempt.method,
 
     amount: transaction.amount,
 
@@ -276,5 +270,81 @@ export function executeRecoveryAction(
     reason: success
       ? "Payment recovered successfully."
       : "Recovery action did not recover the payment.",
+  };
+}
+
+export function executeCustomerSelectedMethod(
+  transaction: Transaction,
+  customer: Customer,
+  environment: EnvironmentState,
+  method: PaymentMethod,
+  random: () => number = Math.random
+): RecoveryResult {
+  const currentAttempt =
+    transaction.attempts[
+      transaction.attempts.length - 1
+    ];
+
+  if (!currentAttempt) {
+    return {
+      action: getRecommendationAction(method),
+      success: false,
+      recoveredAmount: 0,
+      reason: "No payment attempt exists.",
+    };
+  }
+
+  const failureType =
+    currentAttempt.failureType ?? "unknown";
+
+  const outcomeModel =
+    generateHiddenOutcomeModel(
+      customer,
+      method,
+      failureType,
+      environment
+    );
+
+  const success =
+    random() <
+    outcomeModel.methodSuccessProbability[
+      method
+    ];
+
+  const newAttemptNumber =
+    transaction.attempts.length + 1;
+
+  const newAttempt: PaymentAttempt = {
+    id:
+      `${transaction.id}_ATTEMPT_${newAttemptNumber}`,
+
+    transactionId: transaction.id,
+
+    method,
+    amount: transaction.amount,
+
+    status: success
+      ? "success"
+      : "failed",
+
+    timestamp: new Date().toISOString(),
+
+    ...(success
+      ? {}
+      : {
+          failureType:
+            currentAttempt.failureType,
+        }),
+  };
+
+  return {
+    action: getRecommendationAction(method),
+    success,
+    recoveredAmount:
+      success ? transaction.amount : 0,
+    attempt: newAttempt,
+    reason: success
+      ? "Customer accepted the recommendation and the selected payment method recovered successfully."
+      : "Customer accepted the recommendation, but the selected payment method did not recover the payment.",
   };
 }

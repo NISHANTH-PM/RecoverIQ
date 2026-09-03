@@ -29,6 +29,27 @@ export interface PolicyDecision {
 
 const MAX_ATTEMPTS = 3;
 
+function getMethodFromAction(
+  action: RecoveryAction
+): PaymentMethod | null {
+  switch (action) {
+    case "recommend_upi":
+      return "upi";
+
+    case "recommend_card":
+      return "card";
+
+    case "recommend_net_banking":
+      return "net_banking";
+
+    case "recommend_wallet":
+      return "wallet";
+
+    default:
+      return null;
+  }
+}
+
 export function checkPolicy(
   action: RecoveryAction,
   context: PolicyContext
@@ -114,6 +135,12 @@ export function checkPolicy(
    * Recommendations for alternative payment
    * methods are allowed, but they do not
    * silently change the customer's method.
+   *
+   * If the customer has already rejected a
+   * given payment method in this session,
+   * do not re-recommend the same method.
+   * The session records these as
+   * "rejected:<method>" constraints.
    */
 
   if (
@@ -122,6 +149,26 @@ export function checkPolicy(
     action === "recommend_net_banking" ||
     action === "recommend_wallet"
   ) {
+    const recommendedMethod =
+      getMethodFromAction(action);
+
+    const alreadyRejected =
+      recommendedMethod !== null &&
+      context.session.customerConstraints.some(
+        (constraint) =>
+          constraint ===
+            `rejected:${recommendedMethod}`,
+      );
+
+    if (alreadyRejected) {
+      return {
+        action,
+        allowed: false,
+        reason:
+          "Customer has already rejected this payment method in this session.",
+      };
+    }
+
     return {
       action,
       allowed: true,

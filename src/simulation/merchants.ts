@@ -1,11 +1,22 @@
 import type { Merchant } from "./types.js";
+import type { Random } from "./random.js";
 
-function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+function randomInt(
+  min: number,
+  max: number,
+  random: Random
+): number {
+  return Math.floor(
+    random() * (max - min + 1)
+  ) + min;
 }
 
-function randomFloat(min: number, max: number): number {
-  return min + Math.random() * (max - min);
+function randomFloat(
+  min: number,
+  max: number,
+  random: Random
+): number {
+  return min + random() * (max - min);
 }
 
 const MERCHANT_NAMES = [
@@ -21,10 +32,13 @@ const MERCHANT_NAMES = [
   "DailyNeeds",
 ];
 
-function generateMerchant(id: number): Merchant {
-  const totalTransactions = randomInt(500, 10000);
+function generateMerchant(
+  id: number,
+  random: Random
+): Merchant {
+  const totalTransactions = randomInt(500, 10000, random);
 
-  const successRate = randomFloat(0.75, 0.97);
+  const successRate = randomFloat(0.75, 0.97, random);
 
   const successfulTransactions = Math.round(
     totalTransactions * successRate
@@ -37,7 +51,7 @@ function generateMerchant(id: number): Merchant {
       MERCHANT_NAMES[(id - 1) % MERCHANT_NAMES.length],
 
     averageTransactionAmount: Math.round(
-      randomFloat(300, 8000)
+      randomFloat(300, 8000, random)
     ),
 
     totalTransactions,
@@ -46,11 +60,13 @@ function generateMerchant(id: number): Merchant {
   };
 }
 
-export function generateMerchants(count: number): Merchant[] {
-  const merchants: Merchant[] = [];
+export function generateMerchants(
+  count: number,
+  random: Random
+): Merchant[] {  const merchants: Merchant[] = [];
 
   for (let i = 1; i <= count; i++) {
-    merchants.push(generateMerchant(i));
+    merchants.push(generateMerchant(i,random));
   }
 
   return merchants;
