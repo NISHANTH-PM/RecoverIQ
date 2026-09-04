@@ -212,15 +212,9 @@ export async function GET() {
         signal:
           "UPI failed twice (bank_timeout), UPI network degraded",
         decision: "Stop retrying UPI",
-        outcome:
-          decisionInitial.recommendedAction ===
-          "recommend_card"
-            ? `Recommend ${recommendActionLabel(
-                decisionInitial.recommendedAction,
-              )}`
-            : `Recommend ${recommendActionLabel(
-                decisionInitial.recommendedAction,
-              )}`,
+        outcome: `Recommend ${recommendActionLabel(
+          decisionInitial.recommendedAction,
+        )}`,
       },
       {
         step: 2,
@@ -240,9 +234,7 @@ export async function GET() {
         title: "Customer blocked the recommended method",
         signal:
           "Customer marked card as unavailable in chat",
-        decision: recommendActionLabel(
-          decisionAfterCardBlocked.recommendedAction,
-        ),
+        decision: "Apply constraint",
         outcome: recommendedAfterCardBlocked?.policyAllowed
           ? "Constraint applied, policy allowed alternative"
           : "Constraint applied, policy blocked",

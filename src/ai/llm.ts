@@ -341,8 +341,6 @@ that recovery resume before any recovery action can be considered.
         },
       }),
     });
-    console.log("OPENROUTER STATUS:", response.status, response.statusText);
-
     if (!response.ok) {
       console.error("OpenRouter request failed:", response.status);
 
@@ -350,7 +348,6 @@ that recovery resume before any recovery action can be considered.
     }
 
     const data = await response.json();
-    console.log("OPENROUTER RESPONSE:", JSON.stringify(data, null, 2));
 
     const content = data?.choices?.[0]?.message?.content;
 

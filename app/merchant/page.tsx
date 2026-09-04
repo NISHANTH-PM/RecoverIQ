@@ -241,7 +241,7 @@ export default function MerchantDashboard() {
                   Recovery performance
                 </p>
                 <p className="text-xs text-gray-400">
-                  Deterministic evaluation · 100 Scenarios
+                  Deterministic evaluation · 100 scenarios
                 </p>
               </div>
 

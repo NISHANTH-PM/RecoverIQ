@@ -91,11 +91,6 @@ export async function POST(request: Request) {
         }
       : createInitialConversationState(demoCustomer.availablePaymentMethods);
 
-    console.log("CHAT STATE:", {
-      sessionStatus: state.sessionStatus,
-      currentRecommendation: state.currentRecommendation,
-    });
-
     const session: RecoverySession = {
       id: "demo-session-001",
       transactionId: demoTransaction.id,
@@ -116,9 +111,6 @@ export async function POST(request: Request) {
       state.availablePaymentMethods,
       state.unavailablePaymentMethods,
     );
-    console.log("LLM INTENT:", llmIntent);
-    console.log("CUSTOMER MESSAGE:", message);
-
     const response = processCustomerMessage(
       message,
       state,
@@ -130,26 +122,6 @@ export async function POST(request: Request) {
     );
 
     let execution = null;
-
-    const intentMethod =
-      "method" in response.intent ? response.intent.method : null;
-
-    console.log(
-      "EXECUTION GATE:",
-      JSON.stringify(
-        {
-          intentType: response.intent.type,
-          intentMethod,
-          explicitConfirmation: llmIntent?.explicitConfirmation,
-          currentRecommendation: response.state.currentRecommendation,
-          recommendedMethod: recommendationToMethod(
-            response.state.currentRecommendation,
-          ),
-        },
-        null,
-        2,
-      ),
-    );
 
     let responseMessage = response.message;
 
