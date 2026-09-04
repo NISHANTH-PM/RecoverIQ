@@ -2,6 +2,8 @@
 
 import { FormEvent, useState } from "react";
 
+import TopNav from "./components/TopNav";
+
 type ChatMessage = {
   id: string;
   role: "agent" | "customer";
@@ -265,6 +267,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#f7f8fa] text-[#17181a]">
       <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-8">
+        <TopNav />
         {/* Header */}
         <header className="mb-8 flex items-center justify-between">
           <div>
