@@ -214,6 +214,57 @@ export function processCustomerMessage(
     case "resume_recovery":
       updatedState = setSessionStatus(updatedState, "active");
       break;
+
+    /*
+     * The customer has explicitly accepted the
+     * currently recommended payment method.
+     *
+     * Do NOT generate another recommendation
+     * message here. The chat route's deterministic
+     * execution gate is responsible for executing
+     * the customer-selected method and producing
+     * an execution-specific response.
+     *
+     * If the customer accepts a method that does
+     * not match the current recommendation (e.g.
+     * "use my card" when the engine recommended
+     * net banking), fall through to the default
+     * branch so the engine can re-evaluate with
+     * the customer's preference in scope.
+     */
+    case "accept_recommendation": {
+      const acceptedMethod =
+        intent.method ??
+        recommendationToMethod(updatedState.currentRecommendation);
+
+      const recommendedMethod = recommendationToMethod(
+        updatedState.currentRecommendation,
+      );
+
+      if (
+        acceptedMethod &&
+        recommendedMethod &&
+        acceptedMethod === recommendedMethod &&
+        updatedState.currentRecommendation !== null
+      ) {
+        return {
+          state: updatedState,
+          intent,
+          decision: {
+            recommendedAction:
+              updatedState.currentRecommendation,
+            reason:
+              "Customer accepted the recommended payment method. Awaiting execution result.",
+            actions: [],
+          },
+          message: `Trying your ${getMethodName(
+            acceptedMethod,
+          )} now. I'll confirm the outcome in a moment.`,
+        };
+      }
+
+      break;
+    }
     case "question": {
       const questionDecision = evaluateRecoveryActions(
         transaction,

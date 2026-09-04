@@ -10,13 +10,21 @@ import { processCustomerMessage } from "../../../src/ai/recovery-agent";
 
 import { createInitialConversationState } from "../../../src/ai/conversation-state";
 
-import type { RecoverySession } from "../../../src/simulation/types";
+import type {
+  PaymentMethod,
+  RecoveryAction,
+  RecoverySession,
+} from "../../../src/simulation/types";
 
 import { understandCustomerMessage } from "../../../src/ai/llm";
 
 import { hasExplicitPaymentConfirmation } from "../../../src/ai/intent";
 
 import { detectSensitivePaymentData } from "../../../src/ai/safety";
+
+import { evaluateRecoveryActions } from "../../../src/recovery/decision-engine";
+
+import { setRecommendation, setSessionStatus } from "../../../src/ai/conversation-state";
 
 function recommendationToMethod(action: string | null): string | null {
   switch (action) {
@@ -79,6 +87,7 @@ export async function POST(request: Request) {
       ? {
           ...incomingState,
           messages: incomingState.messages ?? [],
+          sessionStatus: incomingState.sessionStatus ?? "active",
         }
       : createInitialConversationState(demoCustomer.availablePaymentMethods);
 
@@ -142,6 +151,8 @@ export async function POST(request: Request) {
       ),
     );
 
+    let responseMessage = response.message;
+
     if (
       response.state.sessionStatus === "active" &&
       response.intent.type === "accept_recommendation" &&
@@ -165,10 +176,18 @@ export async function POST(request: Request) {
       );
 
       execution = await executionResponse.json();
+
+      if (execution?.result?.success === true) {
+        const recoveredAmount = execution.result.recoveredAmount ?? 0;
+
+        responseMessage = `Payment successful. ₹${recoveredAmount.toLocaleString(
+          "en-IN",
+        )} has been recovered successfully.`;
+      }
     }
 
     return NextResponse.json({
-      message: response.message,
+      message: responseMessage,
       state: response.state,
       decision: response.decision,
       intent: response.intent,

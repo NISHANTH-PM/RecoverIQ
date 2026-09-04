@@ -171,61 +171,63 @@ export default function Home() {
 
       setConversationState(data.state);
 
-      if (data.execution?.result?.success === true) {
-        const recoveredAmount = data.execution.result.recoveredAmount;
+      if (data.execution) {
+        if (data.execution.result?.success === true) {
+          const recoveredAmount = data.execution.result.recoveredAmount;
 
-        const executedMethod: string =
-          data.execution.result.attempt?.method ??
-          data.execution.selectedMethod ??
-          "";
+          const executedMethod: string =
+            data.execution.result.attempt?.method ??
+            data.execution.selectedMethod ??
+            "";
 
-        const attemptId: string | undefined =
-          data.execution.result.attempt?.id;
+          const attemptId: string | undefined =
+            data.execution.result.attempt?.id;
 
-        const parsedAttempts = attemptId
-          ? Number.parseInt(
-              attemptId.split("_").pop() ?? "",
-              10,
-            )
-          : NaN;
+          const parsedAttempts = attemptId
+            ? Number.parseInt(
+                attemptId.split("_").pop() ?? "",
+                10,
+              )
+            : NaN;
 
-        const totalAttempts = Number.isFinite(
-          parsedAttempts,
-        )
-          ? parsedAttempts
-          : paymentPanel.attempts + 1;
+          const totalAttempts = Number.isFinite(
+            parsedAttempts,
+          )
+            ? parsedAttempts
+            : paymentPanel.attempts + 1;
 
-        setRecovered(true);
+          setRecovered(true);
 
-        if (executedMethod) {
-          setPaymentPanel({
-            status: "recovered",
-            currentMethod: executedMethod,
-            attempts: totalAttempts,
-            recoveredAmount,
-          });
+          if (executedMethod) {
+            setPaymentPanel({
+              status: "recovered",
+              currentMethod: executedMethod,
+              attempts: totalAttempts,
+              recoveredAmount,
+            });
+          }
+
+          setMessages((previous) => [
+            ...previous,
+            {
+              id: `agent-${Date.now()}`,
+              role: "agent",
+              content: `Payment successful. ₹${recoveredAmount.toLocaleString(
+                "en-IN",
+              )} has been recovered successfully.`,
+            },
+          ]);
+        } else {
+          setMessages((previous) => [
+            ...previous,
+            {
+              id: `agent-${Date.now()}`,
+              role: "agent",
+              content:
+                "That payment attempt wasn't successful. I won't keep retrying blindly. I'll reassess the available recovery options.",
+            },
+          ]);
         }
-
-        setMessages((previous) => [
-          ...previous,
-          {
-            id: `agent-${Date.now()}`,
-            role: "agent",
-            content: `Payment successful. ₹${recoveredAmount.toLocaleString(
-              "en-IN",
-            )} has been recovered successfully.`,
-          },
-        ]);
-      } else if (data.execution) {
-        setMessages((previous) => [
-          ...previous,
-          {
-            id: `agent-${Date.now()}`,
-            role: "agent",
-            content:
-              "That payment attempt wasn't successful. I won't keep retrying blindly. I'll reassess the available recovery options.",
-          },
-        ]);
       } else {
         setMessages((previous) => [
           ...previous,
