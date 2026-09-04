@@ -3,9 +3,9 @@ import type {
   FailureType,
   PaymentAttempt,
   PaymentMethod,
-} from "./types.js";
+} from "./types";
 
-import type { Random } from "./random.js";
+import type { Random } from "./random";
 
 function randomFloat(random:  Random): number {
   return random();

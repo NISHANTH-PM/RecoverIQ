@@ -1,11 +1,11 @@
 import type {
   PaymentMethod,
   RecoveryAction,
-} from "../simulation/types.js";
+} from "../simulation/types";
 
 import type {
   ProbabilityEstimate,
-} from "./probability.js";
+} from "./probability";
 
 export interface ENVEstimate {
   action: RecoveryAction;

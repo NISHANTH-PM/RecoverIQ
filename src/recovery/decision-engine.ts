@@ -6,23 +6,23 @@ import type {
   RecoveryAction,
   RecoverySession,
   Transaction,
-} from "../simulation/types.js";
+} from "../simulation/types";
 
 import {
   estimateMethodSuccessProbability,
   estimateRetryNowProbability,
   estimateRetryLaterProbability,
-} from "./probability.js";
+} from "./probability";
 
 import {
   calculateENV,
   type ENVEstimate,
-} from "./env.js";
+} from "./env";
 
 import {
   checkPolicy,
   type PolicyDecision,
-} from "./policy.js";
+} from "./policy";
 
 export interface EvaluatedAction {
   action: RecoveryAction;

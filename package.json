@@ -5,7 +5,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "typecheck": "tsc --noEmit"
   },
   "repository": {
@@ -21,10 +23,20 @@
   "homepage": "https://github.com/NISHANTH-PM/RecoverIQ#readme",
   "devDependencies": {
     "@types/node": "^26.4.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "tailwindcss": "^4.3.3",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2"
   },
   "dependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "lucide-react": "^1.40.0",
+    "next": "^16.3.4",
+    "postcss": "^8.5.27",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "recharts": "^3.10.1",
     "typecheck": "^0.1.2"
   }
 }

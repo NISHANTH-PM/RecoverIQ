@@ -1,4 +1,4 @@
-import type { RecoveryAction } from "../simulation/types.js";
+import type { RecoveryAction } from "../simulation/types";
 
 export interface StrategyResult {
   recovered: boolean;

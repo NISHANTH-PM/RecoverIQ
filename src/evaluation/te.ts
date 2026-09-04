@@ -1,4 +1,4 @@
-import { evaluateSeeds, summarizeEvaluation } from "./evaluator.js";
+import { evaluateSeeds, summarizeEvaluation } from "./evaluator";
 
 const seeds = Array.from({ length: 100 }, (_, index) => index + 1);
 

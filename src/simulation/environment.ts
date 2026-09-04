@@ -1,4 +1,4 @@
-import type { EnvironmentState } from "./types.js";
+import type { EnvironmentState } from "./types";
 
 /**
  * Generate the environment state for a simulation world.

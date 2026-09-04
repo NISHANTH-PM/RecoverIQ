@@ -2,7 +2,7 @@ import type {
   Customer,
   PaymentMethod,
   RecoveryAction,
-} from "./types.js";
+} from "./types";
 
 export interface CustomerResponse {
   accepted: boolean;

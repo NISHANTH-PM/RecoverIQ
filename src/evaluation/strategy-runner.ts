@@ -5,21 +5,21 @@ import type {
   RecoveryAction,
   RecoverySession,
   Transaction,
-} from "../simulation/types.js";
+} from "../simulation/types";
 
-import { executeRecoveryAction, executeCustomerSelectedMethod } from "../simulation/simulator.js";
+import { executeRecoveryAction, executeCustomerSelectedMethod } from "../simulation/simulator";
 
-import { evaluateFixedRetryBaseline } from "../recovery/baseline.js";
+import { evaluateFixedRetryBaseline } from "../recovery/baseline";
 
-import { evaluateRecoveryActions } from "../recovery/decision-engine.js";
+import { evaluateRecoveryActions } from "../recovery/decision-engine";
 
-import { checkPolicy } from "../recovery/policy.js";
+import { checkPolicy } from "../recovery/policy";
 
-import { createSeededRandom } from "../simulation/random.js";
+import { createSeededRandom } from "../simulation/random";
 
-import type { StrategyResult } from "./types.js";
+import type { StrategyResult } from "./types";
 
-import { simulateCustomerChoice } from "../simulation/customer-response.js";
+import { simulateCustomerChoice } from "../simulation/customer-response";
 
 /**
  * Maximum number of recovery attempts (excluding

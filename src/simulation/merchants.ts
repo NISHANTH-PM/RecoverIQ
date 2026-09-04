@@ -1,5 +1,5 @@
-import type { Merchant } from "./types.js";
-import type { Random } from "./random.js";
+import type { Merchant } from "./types";
+import type { Random } from "./random";
 
 function randomInt(
   min: number,

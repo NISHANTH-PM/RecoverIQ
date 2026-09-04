@@ -3,7 +3,7 @@ import type {
   EnvironmentState,
   FailureType,
   PaymentMethod,
-} from "../simulation/types.js";
+} from "../simulation/types";
 
 export interface ProbabilityEstimate {
   probability: number;

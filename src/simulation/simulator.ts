@@ -6,35 +6,35 @@ import type {
   Transaction,
   PaymentMethod,
   RecoveryAction
-} from "./types.js";
+} from "./types";
 
 import {
   generateCustomers,
-} from "./customers.js";
+} from "./customers";
 
 import {
   generateMerchants,
-} from "./merchants.js";
+} from "./merchants";
 
 import {
   generateTransactions,
-} from "./transactions.js";
+} from "./transactions";
 
 import {
   applyFailure,
-} from "./failure-generator.js";
+} from "./failure-generator";
 
 import {
   generateHiddenOutcomeModel,
-} from "./outcome-model.js";
+} from "./outcome-model";
 
 import {
   generateEnvironment,
-} from "./environment.js";
+} from "./environment";
 
 import {
   createSeededRandom,
-} from "./random.js";
+} from "./random";
 
 export interface SimulationWorld {
   customers: Customer[];

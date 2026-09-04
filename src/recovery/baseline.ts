@@ -1,7 +1,7 @@
 import type {
   Transaction,
   RecoveryAction,
-} from "../simulation/types.js";
+} from "../simulation/types";
 
 export interface BaselineDecision {
   actions: RecoveryAction[];

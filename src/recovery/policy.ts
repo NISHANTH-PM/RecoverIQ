@@ -3,7 +3,7 @@ import type {
   PaymentMethod,
   RecoveryAction,
   RecoverySession,
-} from "../simulation/types.js";
+} from "../simulation/types";
 
 export interface PolicyContext {
   amount: number;

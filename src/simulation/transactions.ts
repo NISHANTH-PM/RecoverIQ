@@ -5,9 +5,9 @@ import type {
   PaymentStatus,
   Transaction,
   PaymentAttempt,
-} from "./types.js";
+} from "./types";
 
-import type { Random } from "./random.js";
+import type { Random } from "./random";
 
 function randomInt(
   min: number,

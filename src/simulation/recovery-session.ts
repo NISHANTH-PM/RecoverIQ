@@ -2,7 +2,7 @@ import type {
   RecoveryDecision,
   RecoverySession,
   Transaction,
-} from "./types.js";
+} from "./types";
 
 export function createRecoverySession(
   transaction: Transaction

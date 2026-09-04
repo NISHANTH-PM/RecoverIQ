@@ -2,9 +2,9 @@ import type {
   Customer,
   PaymentMethod,
   MethodStats,
-} from "./types.js";
+} from "./types";
 
-import type { Random } from "./random.js";
+import type { Random } from "./random";
 
 const PAYMENT_METHODS: PaymentMethod[] = [
   "upi",

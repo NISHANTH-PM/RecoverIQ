@@ -1,21 +1,21 @@
-import { createSimulationWorld } from "../simulation/simulator.js";
+import { createSimulationWorld } from "../simulation/simulator";
 
-import { runBaseline, runRecoverIQ } from "./strategy-runner.js";
+import { runBaseline, runRecoverIQ } from "./strategy-runner";
 
 import type {
   EvaluationScenario,
   EvaluationSummary,
   ScenarioComparison,
-} from "./types.js";
+} from "./types";
 
-import { createEvaluationSplit } from "./split.js";
+import { createEvaluationSplit } from "./split";
 
-import { createSeededRandom } from "../simulation/random.js";
+import { createSeededRandom } from "../simulation/random";
 
 import {
   getNoInterventionSuccessProbability,
   simulateNoInterventionOutcome,
-} from "../simulation/outcome-model.js";
+} from "../simulation/outcome-model";
 
 export function evaluateScenario(seed: number): ScenarioComparison {
   const world = createSimulationWorld(10, 5, 1, seed);

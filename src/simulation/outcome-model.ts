@@ -4,7 +4,7 @@ import type {
   FailureType,
   PaymentMethod,
   RecoveryAction,
-} from "./types.js";
+} from "./types";
 
 export interface HiddenOutcomeModel {
   naturalRecoveryProbability: number;
