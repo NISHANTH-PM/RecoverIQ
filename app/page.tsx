@@ -16,6 +16,13 @@ type RecoveryState = {
   recoveryStep: number;
 };
 
+type PaymentPanelState = {
+  status: "in_progress" | "recovered";
+  currentMethod: string;
+  attempts: number;
+  recoveredAmount: number;
+};
+
 const methodLabel: Record<string, string> = {
   upi: "UPI",
   card: "Card",
@@ -40,6 +47,14 @@ export default function Home() {
   const [started, setStarted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [recovered, setRecovered] = useState(false);
+
+  const [paymentPanel, setPaymentPanel] =
+    useState<PaymentPanelState>({
+      status: "in_progress",
+      currentMethod: "upi",
+      attempts: 2,
+      recoveredAmount: 0,
+    });
 
   async function startRecovery() {
     setLoading(true);
@@ -157,7 +172,37 @@ export default function Home() {
       if (data.execution?.result?.success === true) {
         const recoveredAmount = data.execution.result.recoveredAmount;
 
+        const executedMethod: string =
+          data.execution.result.attempt?.method ??
+          data.execution.selectedMethod ??
+          "";
+
+        const attemptId: string | undefined =
+          data.execution.result.attempt?.id;
+
+        const parsedAttempts = attemptId
+          ? Number.parseInt(
+              attemptId.split("_").pop() ?? "",
+              10,
+            )
+          : NaN;
+
+        const totalAttempts = Number.isFinite(
+          parsedAttempts,
+        )
+          ? parsedAttempts
+          : paymentPanel.attempts + 1;
+
         setRecovered(true);
+
+        if (executedMethod) {
+          setPaymentPanel({
+            status: "recovered",
+            currentMethod: executedMethod,
+            attempts: totalAttempts,
+            recoveredAmount,
+          });
+        }
 
         setMessages((previous) => [
           ...previous,
@@ -340,25 +385,63 @@ export default function Home() {
                 </p>
 
                 <div className="mb-5">
-                  <p className="text-3xl font-semibold">₹2,499</p>
-                  <p className="mt-1 text-sm text-gray-500">Payment attempt</p>
+                  <p className="text-3xl font-semibold">
+                    ₹
+                    {paymentPanel.status === "recovered"
+                      ? paymentPanel.recoveredAmount.toLocaleString(
+                          "en-IN",
+                        )
+                      : "2,499"}
+                  </p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {paymentPanel.status === "recovered"
+                      ? "Recovered amount"
+                      : "Payment attempt"}
+                  </p>
                 </div>
 
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
+                    <span className="text-gray-500">Status</span>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                        paymentPanel.status === "recovered"
+                          ? "bg-green-50 text-green-700"
+                          : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {paymentPanel.status === "recovered"
+                        ? "Recovered"
+                        : "In progress"}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
                     <span className="text-gray-500">Current method</span>
-                    <span className="font-medium">UPI</span>
+                    <span className="font-medium">
+                      {methodLabel[paymentPanel.currentMethod] ??
+                        paymentPanel.currentMethod}
+                    </span>
                   </div>
 
                   <div className="flex justify-between">
                     <span className="text-gray-500">Attempts</span>
-                    <span className="font-medium">2</span>
+                    <span className="font-medium">
+                      {paymentPanel.attempts}
+                    </span>
                   </div>
 
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Failure</span>
-                    <span className="font-medium">Bank timeout</span>
-                  </div>
+                  {paymentPanel.status === "recovered" && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Recovered</span>
+                      <span className="font-medium">
+                        ₹
+                        {paymentPanel.recoveredAmount.toLocaleString(
+                          "en-IN",
+                        )}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
