@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import Image from "next/image";
 import Link from "next/link";
 
 type ComparisonRow = {
@@ -119,9 +120,13 @@ export default function MerchantDashboard() {
         {/* Header */}
         <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black text-sm font-bold text-white">
-              RQ
-            </div>
+            <Image
+              src="/rq-logo.png"
+              alt="RecoverIQ logo"
+              width={32}
+              height={32}
+              className="h-8 w-8 rounded-lg"
+            />
             <div>
               <h1 className="text-xl font-semibold tracking-tight">
                 RecoverIQ
