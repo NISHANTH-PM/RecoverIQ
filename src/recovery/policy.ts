@@ -141,6 +141,13 @@ export function checkPolicy(
    * do not re-recommend the same method.
    * The session records these as
    * "rejected:<method>" constraints.
+   *
+   * If the customer explicitly selected a
+   * method that ACTUALLY FAILED during this
+   * recovery session, do not re-recommend
+   * it either — it is new current-session
+   * context. The session records these as
+   * "failed_in_session:<method>" constraints.
    */
 
   if (
@@ -160,12 +167,29 @@ export function checkPolicy(
             `rejected:${recommendedMethod}`,
       );
 
+    const alreadyFailedInSession =
+      recommendedMethod !== null &&
+      context.session.customerConstraints.some(
+        (constraint) =>
+          constraint ===
+            `failed_in_session:${recommendedMethod}`,
+      );
+
     if (alreadyRejected) {
       return {
         action,
         allowed: false,
         reason:
           "Customer has already rejected this payment method in this session.",
+      };
+    }
+
+    if (alreadyFailedInSession) {
+      return {
+        action,
+        allowed: false,
+        reason:
+          "This payment method already failed during the current recovery session.",
       };
     }
 

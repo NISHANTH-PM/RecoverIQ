@@ -2,6 +2,8 @@
 
 import { FormEvent, useState } from "react";
 
+import Link from "next/link";
+
 import TopNav from "./components/TopNav";
 
 type ChatMessage = {
@@ -54,7 +56,7 @@ export default function Home() {
     useState<PaymentPanelState>({
       status: "in_progress",
       currentMethod: "upi",
-      attempts: 2,
+      attempts: 0,
       recoveredAmount: 0,
     });
 
@@ -79,6 +81,31 @@ export default function Home() {
         customerMessages: [],
         recoveryStep: 0,
       });
+
+      /*
+       * Seed the payment panel from the actual
+       * demo transaction state instead of
+       * hard-coding it. The /api/recover
+       * response includes the latest attempt
+       * (the method that just failed) and the
+       * full transaction with its attempts
+       * array, from which we can derive the
+       * correct attempt count.
+       */
+      if (data.latestAttempt) {
+        const latestMethod: string =
+          data.latestAttempt.method ?? "upi";
+
+        const attemptsCount =
+          data.transaction?.attempts?.length ?? 0;
+
+        setPaymentPanel((previous) => ({
+          ...previous,
+          status: "in_progress",
+          currentMethod: latestMethod,
+          attempts: attemptsCount,
+        }));
+      }
 
       const action = data.decision.recommendedAction;
 
@@ -172,29 +199,36 @@ export default function Home() {
       setConversationState(data.state);
 
       if (data.execution) {
+        /*
+         * Both success and failure paths update
+         * the payment panel from the actual
+         * execution result returned by /api/execute.
+         * The panel MUST reflect the real outcome —
+         * it is never faked.
+         */
+        const executedMethod: string =
+          data.execution.result?.attempt?.method ??
+          data.execution.selectedMethod ??
+          "";
+
+        const attemptId: string | undefined =
+          data.execution.result?.attempt?.id;
+
+        const parsedAttempts = attemptId
+          ? Number.parseInt(
+              attemptId.split("_").pop() ?? "",
+              10,
+            )
+          : NaN;
+
+        const totalAttempts = Number.isFinite(
+          parsedAttempts,
+        )
+          ? parsedAttempts
+          : paymentPanel.attempts + 1;
+
         if (data.execution.result?.success === true) {
           const recoveredAmount = data.execution.result.recoveredAmount;
-
-          const executedMethod: string =
-            data.execution.result.attempt?.method ??
-            data.execution.selectedMethod ??
-            "";
-
-          const attemptId: string | undefined =
-            data.execution.result.attempt?.id;
-
-          const parsedAttempts = attemptId
-            ? Number.parseInt(
-                attemptId.split("_").pop() ?? "",
-                10,
-              )
-            : NaN;
-
-          const totalAttempts = Number.isFinite(
-            parsedAttempts,
-          )
-            ? parsedAttempts
-            : paymentPanel.attempts + 1;
 
           setRecovered(true);
 
@@ -218,6 +252,23 @@ export default function Home() {
             },
           ]);
         } else {
+          /*
+           * Failed execution: reflect the
+           * latest method and the new total
+           * attempt count on the panel. The
+           * status remains "in_progress" so the
+           * customer knows recovery continues
+           * via another method.
+           */
+          if (executedMethod) {
+            setPaymentPanel((previous) => ({
+              ...previous,
+              status: "in_progress",
+              currentMethod: executedMethod,
+              attempts: totalAttempts,
+            }));
+          }
+
           setMessages((previous) => [
             ...previous,
             {
@@ -505,6 +556,16 @@ export default function Home() {
             </div>
           </aside>
         </div>
+
+        <footer className="mt-8 flex justify-end">
+          <Link
+            href="/merchant"
+            className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-4 py-2 text-xs text-gray-500 transition hover:border-gray-300 hover:text-gray-700"
+          >
+            View Merchant Intelligence
+            <span aria-hidden>→</span>
+          </Link>
+        </footer>
       </div>
     </main>
   );

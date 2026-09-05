@@ -198,6 +198,38 @@ export function processCustomerMessage(
 
   let updatedState = addCustomerMessage(state, message);
 
+  /*
+   * Stopped-session guard.
+   *
+   * A stopped session must not produce execution-style
+   * messages ("Trying your card now…") and must not
+   * execute payments. Only an explicit resume_recovery
+   * can reactivate the session.
+   *
+   * This check must run BEFORE any branch that could
+   * generate an execution-style response — most notably
+   * the accept_recommendation branch below, which would
+   * otherwise early-return a "trying now" message even
+   * when the session is stopped.
+   */
+  if (
+    updatedState.sessionStatus === "stopped" &&
+    intent.type !== "resume_recovery"
+  ) {
+    return {
+      message:
+        "This recovery is currently stopped. If you'd like me to continue, explicitly tell me to resume the recovery.",
+      state: updatedState,
+      decision: {
+        recommendedAction: "stop",
+        reason:
+          "Recovery remains stopped until the customer explicitly requests a resume.",
+        actions: [],
+      },
+      intent,
+    };
+  }
+
   switch (intent.type) {
     case "method_unavailable":
       updatedState = markMethodUnavailable(updatedState, intent.method);

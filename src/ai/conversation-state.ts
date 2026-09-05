@@ -15,6 +15,17 @@ export interface RecoveryConversationState {
   messages: ConversationMessage[];
   recoveryStep: number;
   sessionStatus: "active" | "stopped" | "recovered";
+
+  /*
+   * Methods that the customer explicitly selected
+   * and that failed during THIS recovery session.
+   *
+   * This is new current-session context (not
+   * historical methodStats) and is used by the
+   * decision engine to penalize / avoid
+   * re-recommending a method that just failed.
+   */
+  failedMethodsInSession: PaymentMethod[];
 }
 
 export function createInitialConversationState(
@@ -27,6 +38,7 @@ export function createInitialConversationState(
     messages: [],
     recoveryStep: 0,
     sessionStatus: "active",
+    failedMethodsInSession: [],
   };
 }
 

@@ -88,6 +88,8 @@ export async function POST(request: Request) {
           ...incomingState,
           messages: incomingState.messages ?? [],
           sessionStatus: incomingState.sessionStatus ?? "active",
+          failedMethodsInSession:
+            incomingState.failedMethodsInSession ?? [],
         }
       : createInitialConversationState(demoCustomer.availablePaymentMethods);
 
@@ -98,6 +100,22 @@ export async function POST(request: Request) {
       customerConstraints: [
         ...state.unavailablePaymentMethods.map(
           (method: string) => `${method}_unavailable`,
+        ),
+        /*
+         * Methods that already failed in this
+         * session are propagated to the policy
+         * layer via session.customerConstraints so
+         * the next decision cannot blindly
+         * re-recommend the same method.
+         *
+         * The prefix `failed_in_session:` is
+         * distinct from `rejected:<method>`
+         * (customer rejection) and from
+         * `<method>_unavailable` (customer
+         * inability to use).
+         */
+        ...state.failedMethodsInSession.map(
+          (method: string) => `failed_in_session:${method}`,
         ),
       ],
       status: "active",
@@ -155,6 +173,49 @@ export async function POST(request: Request) {
         responseMessage = `Payment successful. ₹${recoveredAmount.toLocaleString(
           "en-IN",
         )} has been recovered successfully.`;
+
+        /*
+         * Mark the conversation state as
+         * recovered so the UI and the next
+         * agent turn treat the session as
+         * terminal. The "Trying your card now"
+         * message we received from the agent
+         * is replaced by the success message
+         * above.
+         */
+        response.state = setSessionStatus(
+          response.state,
+          "recovered",
+        );
+      } else if (execution?.result?.success === false) {
+        /*
+         * The customer-selected method actually
+         * failed. Record it as new
+         * current-session context so the next
+         * decision will not blindly re-recommend
+         * the same method.
+         *
+         * This is the only mutation of
+         * state.failedMethodsInSession in the
+         * request lifecycle, and it is derived
+         * directly from the simulator's
+         * execution result — never from the
+         * customer's words or from a guess.
+         */
+        const failedMethod = response.intent.method;
+
+        const existing =
+          response.state.failedMethodsInSession ?? [];
+
+        if (failedMethod && !existing.includes(failedMethod)) {
+          response.state = {
+            ...response.state,
+            failedMethodsInSession: [
+              ...existing,
+              failedMethod,
+            ],
+          };
+        }
       }
     }
 
