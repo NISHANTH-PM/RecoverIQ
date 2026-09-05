@@ -129,7 +129,7 @@ export default function MerchantDashboard() {
                 RecoverIQ
               </h1>
               <p className="text-sm text-gray-500">
-                Merchant Intelligence
+                Merchant Intelligence · operator view
               </p>
             </div>
           </div>
