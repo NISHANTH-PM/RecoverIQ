@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import TopNav from "../components/TopNav";
+import Link from "next/link";
 
 type ComparisonRow = {
   metric: string;
@@ -116,8 +116,6 @@ export default function MerchantDashboard() {
   return (
     <main className="min-h-screen bg-[#f7f8fa] text-[#17181a]">
       <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-8">
-        <TopNav />
-
         {/* Header */}
         <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
@@ -133,8 +131,17 @@ export default function MerchantDashboard() {
               </p>
             </div>
           </div>
-          <div className="hidden rounded-full border border-gray-200 bg-white px-4 py-2 text-xs text-gray-500 sm:block">
-            Evaluation snapshot · {data?.hero.scenariosEvaluated ?? "—"} scenarios
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-500 transition hover:border-gray-300 hover:text-gray-700"
+            >
+              <span aria-hidden>←</span>
+              Recovery Experience
+            </Link>
+            <div className="hidden rounded-full border border-gray-200 bg-white px-4 py-2 text-xs text-gray-500 sm:block">
+              Evaluation snapshot · {data?.hero.scenariosEvaluated ?? "—"} scenarios
+            </div>
           </div>
         </header>
 
